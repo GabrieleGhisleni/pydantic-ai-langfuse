@@ -1,0 +1,41 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-toml
+      - id: check-yaml
+        args:
+          - --unsafe
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        entry: trailing-whitespace-fixer
+
+      # Prevent committing inline conflict markers
+      - id: check-merge-conflict
+        args: [--assume-in-merge]
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    # Ruff version.
+    rev: v0.9.1
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy
+        entry: poetry run dmypy run .
+        language: system
+        files: ".*\\.py"
+        exclude: "py-stubs"
+        # without this option, when run with `pre-commit run -a`, it would run N mypy, each with
+        # ~100 python files
+        pass_filenames: false
+        types: [python]
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        additional_dependencies:
+          - prettier@3.4.2

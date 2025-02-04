@@ -2,14 +2,28 @@
 name = "pydantic-ai-langfuse"
 version = "0.1.0"
 description = "Langfuse integration for pydantic-ai"
-authors = ["Gabriele Ghisleni <gabriele.ghisleni@spaziodati.eu>"]
-license = "Gabriele Ghisleni <gabriele.ghisleni01@gmail.com>"
+authors = ["Gabriele Ghisleni <gabriele.ghisleni01@gmail.com>"]
+license = "MIT License"
 readme = "README.md"
+packages = [
+    { include = "pydantic_ai_langfuse", from = "src" }
+]
 
 [tool.poetry.dependencies]
 python = "^3.12"
+langfuse = {extras = ["openai"], version = "^2.58.2"}
+pydantic-ai-slim = {extras = ["openai"], version = "^0.0.21"}
 
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.9.4"
+mypy = "^1.14.1"
+isort = "^6.0.0"
+black = "^25.1.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.mypy]
+disable_error_code = ["import-untyped"]

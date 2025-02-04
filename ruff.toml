@@ -1,0 +1,71 @@
+target-version = "py312"
+line-length = 119
+extend-exclude = ["protos"]
+
+[lint]
+select = [
+    "A",   # builtins
+    "ASYNC",
+    "C4",  # comprehensions
+    "C90", # complexity
+    "DJ",  # django
+    "E",   # pycodestyle
+    "EXE", # shebangs
+    "F",   # pyflakes
+    "G",   # logging
+    "I",   # isort
+    "ICN", # imports
+    "N804", # naming: cls
+    "N805", # naming: self
+    "PD",  # pandas
+    "PT",  # pytest-style
+    "T10", # debugger
+    "TRY", # tryceratops
+    "UP", # pyupgrade
+    "W",   # pycodestyle
+    "B", # bugbear
+    "DTZ", # flake-datetimez
+    "INT", # gettext
+    "ISC", # implicit str-concat
+    "PIE", # flake8-pie
+    "PGH", # pygrep-hooks
+    "RET",  # flake8-return
+    "RUF",
+    "SIM",  # flake8-simplify
+    "TCH", # type-checking
+    "TID", # tidy-imports
+]
+ignore = [
+    "A003",   # builtin-attribute-shadowing
+    "DJ001",  # django-nullable-model-string-field
+    "E203",   # 1 blank line required before class docstring
+    "E501",   # line too long
+    "E741",   # ambiguous variable name
+    "PD015",  # pandas-use-of-pd-merge
+    "TRY0",   # various checks on exceptions
+    "TRY301", # raise-within-try
+    "B009",    # clash with mypy, but we could find a solution
+    "B010",    # clash with mypy, but we could find a solution
+#    "ISC001", # may cause conflicts when used with the formatter
+    "ISC003", # we like multi line string concatenation with `+`
+    "RUF015", # unnecessary-iterable-allocation-for-first-element
+]
+
+unfixable = [
+    "B007", # fixes are correct, but sometimes the proposed solution can be simplified (eg. remove enumerate())
+    "SIM108", # if-else-block-instead-of-if-exp, it's not alwasy better to use ternary operator
+    "SIM114", # if-with-same-arms, makes some if condition difficult to read
+    "SIM115", # open-file-with-context-handler
+    "SIM401", # if-else-block-instead-of-dict-get
+]
+[lint.flake8-implicit-str-concat]
+allow-multiline = false
+[lint.flake8-pytest-style]
+parametrize-names-type = "csv"
+
+[lint.mccabe]
+max-complexity = 15
+
+[lint.isort]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]
+known-first-party = ["pydantic_ai_langfuse", "tests", "conftest"]
