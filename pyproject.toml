@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydantic-ai-langfuse"
-version = "0.1.1"
+version = "0.1.2"
 description = "Langfuse integration for pydantic-ai"
 authors = ["Gabriele Ghisleni <gabriele.ghisleni01@gmail.com>"]
 license = "MIT License"
