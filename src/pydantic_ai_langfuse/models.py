@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from langfuse.openai import AsyncOpenAI as LanguageFuseAsyncOpenAI
     from pydantic_ai.messages import ModelMessage
     from pydantic_ai.models import ModelRequestParameters
+    from pydantic_ai.tools import ToolDefinition
 
 
 class LangfuseOpenAIModelSettings(ModelSettings):
@@ -106,3 +107,16 @@ class LangfuseOpenAIModel(OpenAIModel):
             user_id=model_settings.get("user_id"),
             tags=model_settings.get("tags"),
         )
+
+    @staticmethod
+    def _map_tool_definition(f: ToolDefinition) -> chat.ChatCompletionToolParam:
+        """Add strict to function calling."""
+        return {
+            "type": "function",
+            "function": {
+                "strict": True,
+                "name": f.name,
+                "description": f.description,
+                "parameters": f.parameters_json_schema,
+            },
+        }
