@@ -24,39 +24,43 @@ Before running your model, you need to set up the following environment variable
 Below is a complete Python example showing how to set up and use the LangfuseOpenAIModel with extra model settings. This example uses the synchronous `run_sync` method with basic error handling and retries built in.
 
 ```python
-import os
+if __name__ == "__main__":
+    import os
 
-from langfuse.openai import AsyncOpenAI
-from pydantic_ai import Agent
+    from langfuse.openai import AsyncOpenAI
+    from pydantic_ai import Agent
 
-from pydantic_ai_langfuse import LangfuseOpenAIModel
+    from pydantic_ai_langfuse import LangfuseOpenAIModel, LangfuseOpenAIModelSettings
 
-for var in [
-    "OPENAI_API_KEY",
-    "LANGFUSE_PUBLIC_KEY",
-    "LANGFUSE_SECRET_KEY",
-    "LANGFUSE_HOST",
-]:
-    if var not in os.environ:
-        raise OSError(f"Missing env variable: {var}")
+    for var in [
+        "OPENAI_API_KEY",
+        "LANGFUSE_PUBLIC_KEY",
+        "LANGFUSE_SECRET_KEY",
+        "LANGFUSE_HOST",
+    ]:
+        if var not in os.environ:
+            raise OSError(f"Missing env variable: {var}")
 
-weather_agent = Agent(
-    model=LangfuseOpenAIModel("gpt-4o", openai_client=AsyncOpenAI()),
-    system_prompt="Be concise: reply with one sentence.",
-    retries=2,
-)
+    weather_agent = Agent(
+        model=LangfuseOpenAIModel("gpt-4o", openai_client=AsyncOpenAI()),
+        system_prompt="Be concise: reply with one sentence.",
+        retries=2,
+    )
 
-result = weather_agent.run_sync(
-    "What the weather like in Medolago BG?",
-    model_settings={
+    model_settings: LangfuseOpenAIModelSettings = {
         "name": "weather_query",
         "metadata": {"location": "medolago", "query_type": "weather"},
         "session_id": "testoneditest",
         "user_id": "user123",
         "tags": ["weather", "italy", "query"],
-    },
-)
+    }
 
-print("Response:", result.data)
+    result = weather_agent.run_sync(
+        user_prompt="What the weather like in Medolago BG?",
+        model_settings=model_settings,
+    )
+
+    print("Response:", result.data)
+
 
 ```

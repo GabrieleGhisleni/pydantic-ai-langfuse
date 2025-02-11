@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydantic-ai-langfuse"
-version = "0.1.2"
+version = "0.2.1"
 description = "Langfuse integration for pydantic-ai"
 authors = ["Gabriele Ghisleni <gabriele.ghisleni01@gmail.com>"]
 license = "MIT License"
@@ -12,7 +12,7 @@ packages = [
 [tool.poetry.dependencies]
 python = "^3.10"
 langfuse = {extras = ["openai"], version = "^2.58.2"}
-pydantic-ai-slim = {extras = ["openai"], version = "^0.0.21"}
+pydantic-ai-slim = {extras = ["openai"], version = "^0.0.23"}
 
 
 [tool.poetry.group.dev.dependencies]

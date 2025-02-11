@@ -1,15 +1,12 @@
 from __future__ import annotations as _annotations
 
-from dataclasses import dataclass
 from itertools import chain
 from typing import TYPE_CHECKING, Any, Literal, overload
 
-from pydantic_ai.models import check_allow_model_requests
 from pydantic_ai.models.openai import (
     NOT_GIVEN,
     AsyncStream,
     ChatCompletionChunk,
-    OpenAIAgentModel,
     OpenAIModel,
     OpenAIModelSettings,
     chat,
@@ -18,9 +15,8 @@ from pydantic_ai.settings import ModelSettings
 
 if TYPE_CHECKING:
     from langfuse.openai import AsyncOpenAI as LanguageFuseAsyncOpenAI
-    from openai.types.chat import ChatCompletion
-    from pydantic_ai.messages import ModelMessage, ModelRequest, ModelResponse
-    from pydantic_ai.tools import ToolDefinition
+    from pydantic_ai.messages import ModelMessage
+    from pydantic_ai.models import ModelRequestParameters
 
 
 class LangfuseOpenAIModelSettings(ModelSettings):
@@ -44,70 +40,53 @@ class LangfuseOpenAIModelSettings(ModelSettings):
     "Set tags to categorize and filter traces."
 
 
-@dataclass(init=False)
 class LangfuseOpenAIModel(OpenAIModel):
     client: LanguageFuseAsyncOpenAI
 
-    async def agent_model(
-        self,
-        *,
-        function_tools: list[ToolDefinition],
-        allow_text_result: bool,
-        result_tools: list[ToolDefinition],
-    ) -> LangfuseOpenAIAgentModel:
-        check_allow_model_requests()
-        tools = [self._map_tool_definition(r) for r in function_tools]
-        if result_tools:
-            tools += [self._map_tool_definition(r) for r in result_tools]
-        return LangfuseOpenAIAgentModel(
-            self.client,
-            self.model_name,
-            allow_text_result,
-            tools,
-            self.system_prompt_role,
-        )
-
-
-@dataclass
-class LangfuseOpenAIAgentModel(OpenAIAgentModel):
-    client: LanguageFuseAsyncOpenAI
-
     @overload
     async def _completions_create(
         self,
-        messages: list[ModelRequest | ModelResponse],
+        messages: list[ModelMessage],
         stream: Literal[True],
         model_settings: OpenAIModelSettings | LangfuseOpenAIModelSettings,
-    ) -> AsyncStream[ChatCompletionChunk]: ...
+        model_request_parameters: ModelRequestParameters,
+    ) -> AsyncStream[ChatCompletionChunk]:
+        pass
 
     @overload
     async def _completions_create(
         self,
-        messages: list[ModelRequest | ModelResponse],
+        messages: list[ModelMessage],
         stream: Literal[False],
         model_settings: OpenAIModelSettings | LangfuseOpenAIModelSettings,
-    ) -> ChatCompletion: ...
+        model_request_parameters: ModelRequestParameters,
+    ) -> chat.ChatCompletion:
+        pass
 
     async def _completions_create(
         self,
         messages: list[ModelMessage],
         stream: bool,
         model_settings: OpenAIModelSettings | LangfuseOpenAIModelSettings,
+        model_request_parameters: ModelRequestParameters,
     ) -> chat.ChatCompletion | AsyncStream[ChatCompletionChunk]:
-        if not self.tools:
+        tools = self._get_tools(model_request_parameters)
+
+        # standalone function to make it easier to override
+        if not tools:
             tool_choice: Literal["none", "required", "auto"] | None = None
-        elif not self.allow_text_result:
+        elif not model_request_parameters.allow_text_result:
             tool_choice = "required"
         else:
             tool_choice = "auto"
 
         openai_messages = list(chain(*(self._map_message(m) for m in messages)))
         return await self.client.chat.completions.create(
-            model=self.model_name,
+            model=self._model_name,
             messages=openai_messages,
             n=1,
             parallel_tool_calls=model_settings.get("parallel_tool_calls", NOT_GIVEN),
-            tools=self.tools or NOT_GIVEN,
+            tools=tools or NOT_GIVEN,
             tool_choice=tool_choice or NOT_GIVEN,
             stream=stream,
             stream_options={"include_usage": True} if stream else NOT_GIVEN,
@@ -119,6 +98,8 @@ class LangfuseOpenAIAgentModel(OpenAIAgentModel):
             presence_penalty=model_settings.get("presence_penalty", NOT_GIVEN),
             frequency_penalty=model_settings.get("frequency_penalty", NOT_GIVEN),
             logit_bias=model_settings.get("logit_bias", NOT_GIVEN),
+            reasoning_effort=model_settings.get("openai_reasoning_effort", NOT_GIVEN),
+            # LANGFUSE PARAMS #
             name=model_settings.get("name"),
             metadata=model_settings.get("metadata"),
             session_id=model_settings.get("session_id"),

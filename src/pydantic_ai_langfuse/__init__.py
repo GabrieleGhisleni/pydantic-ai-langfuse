@@ -1,3 +1,3 @@
-from .models import LangfuseOpenAIModel
+from .models import LangfuseOpenAIModel, LangfuseOpenAIModelSettings
 
-__all__ = ["LangfuseOpenAIModel"]
+__all__ = ["LangfuseOpenAIModel", "LangfuseOpenAIModelSettings"]
